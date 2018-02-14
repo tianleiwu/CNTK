@@ -6,6 +6,7 @@ import platform
 from warnings import warn
 from setuptools import setup, Extension, find_packages
 import numpy
+import re
 
 IS_WINDOWS = platform.system() == 'Windows'
 
@@ -77,10 +78,34 @@ else:
 
 
 if 'CNTK_LIBRARIES' in os.environ:
-  rt_libs = [strip_path(fn) for fn in os.environ['CNTK_LIBRARIES'].split(';' if IS_WINDOWS else None)]
+  rt_libs_all = [strip_path(fn) for fn in os.environ['CNTK_LIBRARIES'].split(';' if IS_WINDOWS else None)]
 else:
-  rt_libs = [strip_path(fn) for fn in glob(os.path.join(CNTK_LIB_PATH,
+  rt_libs_all = [strip_path(fn) for fn in glob(os.path.join(CNTK_LIB_PATH,
                                                         '*' + libname_rt_ext))]
+
+# Filtering out undesired libs
+#     We are using REGEX instead of GLOBs to perform accurate deletions
+rt_libs = []
+EXCLUDE_RT_LIBS = []
+EXCLUDE_RT_LIBS_SUFFIX = ""
+if not "--with-deps" in sys.argv or "--without-deps" in sys.argv:
+    if IS_WINDOWS:
+        EXCLUDE_RT_LIBS_SUFFIX = "[0-9_\-\.]*\.dll$" # Match specific DLLs listed below
+        EXCLUDE_RT_LIBS += ["cublas", "cudart", "curand", "cusparse"] # Cuda
+        EXCLUDE_RT_LIBS += ["cudnn"] # CUDNN
+        EXCLUDE_RT_LIBS += ["opencv_world"] # OpenCV
+        EXCLUDE_RT_LIBS += ["mkldnn", "mklml", "libiomp5md"] # MKL + MKL-DNN
+        EXCLUDE_RT_LIBS += ["nvml"] # NVML (Nvidia driver)
+
+for fn in rt_libs_all:
+    exclude=False
+    for s in EXCLUDE_RT_LIBS:
+        pattern = re.compile("%s%s" % (s, EXCLUDE_RT_LIBS_SUFFIX), re.IGNORECASE)
+        if pattern.match(fn):
+            exclude=True
+            break
+    if not exclude:
+        rt_libs.append(fn)
 
 # copy over the libraries to the cntk base directory so that the rpath is
 # correctly set
@@ -110,11 +135,11 @@ extra_compile_args = [
 if IS_WINDOWS:
     extra_compile_args += [
         "/EHsc",
-        "/DEBUG",
+        "/DEBUG:NONE",
         "/Zi",
         "/WX"
     ]
-    extra_link_args = ['/DEBUG']
+    extra_link_args = ['/DEBUG:NONE']
     runtime_library_dirs = []
 else:
     extra_compile_args += [
