@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="$(SolutionDir)\CNTK.Common.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug_UWP</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
@@ -64,10 +65,6 @@
     </AppxManifest>
     <Content Include="ImageRecognitionAppCS_TemporaryKey.pfx" />
   </ItemGroup>
-  <PropertyGroup>
-    <CNTKBinSuffix />
-    <CNTKBinSuffix Condition="$(Configuration.StartsWith('Debug'))">d</CNTKBinSuffix>
-  </PropertyGroup>
   <ItemGroup>
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
@@ -77,10 +74,10 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-    <Content Include="$(CNTKRoot)\$(Platform)\$(Configuration)\Cntk.Core_app-2.4$(CNTKBinSuffix).dll">
+    <Content Include="$(CNTKRoot)\$(Platform)\$(Configuration)\Cntk.Core_app-$(CntkComponentVersion).dll">
       <DeploymentContent>true</DeploymentContent>
     </Content>
-    <Content Include="$(CNTKRoot)\$(Platform)\$(Configuration)\Cntk.Math_app-2.4$(CNTKBinSuffix).dll">
+    <Content Include="$(CNTKRoot)\$(Platform)\$(Configuration)\Cntk.Math_app-$(CntkComponentVersion).dll">
       <DeploymentContent>true</DeploymentContent>
     </Content>
     <Content Include="$(CNTKRoot)\$(Platform)\$(Configuration)\libopenblas.dll">
